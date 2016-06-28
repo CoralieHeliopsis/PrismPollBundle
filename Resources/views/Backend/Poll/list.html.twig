@@ -18,6 +18,7 @@
         <table id="polls">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Name</th>
                     <th class="integer">Nb. of votes</th>
                     <th class="boolean">Published</th>
@@ -28,6 +29,9 @@
             <tbody>
                 {% for poll in polls %}
                     <tr>
+                        <td>
+                            {{ poll.id }}
+                        </td>
                         <th>
                             <a href="{{ path('PrismPollBundle_backend_poll_edit', { pollId: poll.id }) }}">{{ poll }}</a>
                         </th>
