@@ -56,6 +56,8 @@ class Configuration implements ConfigurationInterface
                     ->children()
                         ->scalarNode('list')->defaultValue('PrismPollBundle:Backend/Poll:list.html.twig')->end()
                         ->scalarNode('edit')->defaultValue('PrismPollBundle:Backend/Poll:edit.html.twig')->end()
+                        ->scalarNode('results')->defaultValue('PrismPollBundle:Backend/Poll:results.html.twig')->end()
+                        ->scalarNode('result')->defaultValue('PrismPollBundle:Backend/Poll:result.html.twig')->end()
                     ->end()
                 ->end()
 

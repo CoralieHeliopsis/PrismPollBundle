@@ -1,11 +1,19 @@
 PrismPollBundle_backend_poll_list:
     path:  /list
-    defaults: { _controller: PrismPollBundle:Backend\Poll:list }
+    defaults: { _controller: PrismPollBundle:Backend/Poll:list }
 
 PrismPollBundle_backend_poll_edit:
     path:  /edit/{pollId}
-    defaults: { _controller: PrismPollBundle:Backend\Poll:edit, pollId: 0 }
+    defaults: { _controller: PrismPollBundle:Backend/Poll:edit, pollId: 0 }
 
 PrismPollBundle_backend_poll_delete:
     path:  /delete/{pollId}
-    defaults: { _controller: PrismPollBundle:Backend\Poll:delete }
+    defaults: { _controller: PrismPollBundle:Backend/Poll:delete }
+
+PrismPollBundle_backend_poll_results:
+    path:  /results
+    defaults: { _controller: PrismPollBundle:Backend/Poll:results }
+
+PrismPollBundle_backend_poll_result:
+    path:  /result/{pollId}
+    defaults: { _controller: PrismPollBundle:Backend/Poll:result }

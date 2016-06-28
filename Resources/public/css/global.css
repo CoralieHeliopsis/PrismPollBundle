@@ -65,3 +65,18 @@ ul.error {
     margin: 5px 0 0 0;
     padding: 0;
 }
+
+a#add_new {
+    display: inline-block;
+    padding: 2px 8px 2px 5px;
+    font-size: 1.167em;
+    line-height: 1.2em;
+    border-radius: 3px;
+    color: #fff;
+    text-decoration: none;
+    background-color: #34b452;
+}
+
+a#add_new:hover {
+    background-color: #4bc468;
+}

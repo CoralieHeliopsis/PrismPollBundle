@@ -6,6 +6,7 @@
         <h1>Polls List</h1>
 
         <a href="{{ path('PrismPollBundle_backend_poll_edit') }}" id="add_new">+ New Poll</a>
+        <a href="{{ path('PrismPollBundle_backend_poll_results') }}" id="add_new">View results</a>
 
         {% if app.session.flashbag.has('success') %}
             <div id="success">

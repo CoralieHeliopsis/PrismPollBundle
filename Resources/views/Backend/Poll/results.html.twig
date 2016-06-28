@@ -1,0 +1,85 @@
+{% extends 'PrismPollBundle:Backend:layout.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" media="all" href="{{ asset('bundles/prismpoll/css/global.css') }}" />
+    {# TODO: L'animation JS ne fonctionne qu'avec la CSS frontend, voir pour le faire fonctionner
+    avec celles du backend, et supprimer ce block #}
+    <link rel="stylesheet" type="text/css" media="all" href="{{ asset('bundles/prismpoll/css/frontend.css') }}" />
+{% endblock %}
+
+{% block content %}
+    <div id="polls_list">
+
+        <h1>Polls Results</h1>
+
+        <a href="{{ path('PrismPollBundle_backend_poll_list') }}" id="add_new">View list</a>
+
+        <br><br>
+
+        {% if polls %}
+            <ul>
+                {% for poll in polls %}
+                    <li>
+                        <h2>{{ poll }}</h2>
+                        <div class="content">
+                            {{ render(controller('PrismPollBundle:Backend/Poll:result', { 'pollId': poll.id })) }}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <script type="text/javascript">
+                $('#polls_list form').live('submit', function(e) {
+
+                    var contentDiv = $(this).parent();
+
+                    $.ajax({
+                        type: 'POST',
+                        data: $(this).serialize(),
+                        url: $(this).attr('action'),
+                        success: function(response) {
+                            ajaxSuccess(response, contentDiv);
+                        },
+                        error: function(){
+                            ajaxError(contentDiv);
+                        }
+                    });
+
+                    e.preventDefault();
+                });
+
+                $('a.see_results, a.see_form').live('click', function(e) {
+
+                    var contentDiv = $(this).parents('div.content');
+
+                    $.ajax({
+                        type: 'GET',
+                        url: $(this).attr('href'),
+                        success: function(response) {
+                            ajaxSuccess(response, contentDiv);
+                        },
+                        error: function(){
+                            ajaxError(contentDiv);
+                        }
+                    });
+
+                    e.preventDefault();
+                });
+
+                function ajaxSuccess(response, contentDiv) {
+                    contentDiv.html(response);
+                }
+
+                function ajaxError(contentDiv) {
+                    if (contentDiv.children('form').children('.ajax_error').length == 0) {
+                        contentDiv.children('form').prepend('<div class="ajax_error error">An error occured. Please try again later.</div>');
+                    }
+                }
+            </script>
+
+        {% else %}
+            Sorry, there are no polls at the moment.
+        {% endif %}
+    </div>
+
+{% endblock %}
