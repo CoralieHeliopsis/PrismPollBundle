@@ -35,7 +35,7 @@ class PollController extends Controller
             array('createdAt' => 'DESC')
         );
 
-        return $this->render('PrismPollBundle:Backend\Poll:list.html.twig', array(
+        return $this->render($this->container->getParameter('prism_poll.templates_backend.list'), array(
             'polls' => $polls
         ));
     }
@@ -76,7 +76,7 @@ class PollController extends Controller
             }
         }
 
-        return $this->render('PrismPollBundle:Backend\Poll:edit.html.twig', array(
+        return $this->render($this->container->getParameter('prism_poll.templates_backend.edit'), array(
             'poll' => $poll,
             'form' => $form->createView()
         ));

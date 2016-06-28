@@ -3,6 +3,7 @@
 namespace Prism\PollBundle\Controller\Frontend;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -11,6 +12,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PollController extends Controller
 {
+    const RESULTS_ACTION = 'results';
+    const CONFIRM_ACTION = 'confirm';
+    const HIDE_ACTION = 'hide';
+
     /**
      * Init
      */
@@ -37,7 +42,7 @@ class PollController extends Controller
             array('createdAt' => 'DESC')
         );
 
-        return $this->render('PrismPollBundle:Frontend\Poll:list.html.twig', array(
+        return $this->render($this->container->getParameter('prism_poll.templates_frontend.list'), array(
             'polls' => $polls
         ));
     }
@@ -50,6 +55,7 @@ class PollController extends Controller
      *
      * @throws NotFoundHttpException
      * @return Response|RedirectResponse
+                        
      */
     public function voteAction(Request $request, $pollId)
     {
@@ -61,9 +67,19 @@ class PollController extends Controller
             throw $this->createNotFoundException("This poll doesn't exist or has been closed.");
         }
 
+        $pollVotedAction = $this->container->getParameter('prism_poll.actions.poll_voted');
+        $pollSubmittedAction = $this->container->getParameter('prism_poll.actions.poll_submitted');
+
         // If the user has already voted, show the results
         if ($this->hasVoted($request, $pollId)) {
-            return $this->forward('PrismPollBundle:Frontend\Poll:results', array('pollId' => $pollId, 'hasVoted' => true));
+            switch( $pollVotedAction )
+            {
+                case self::HIDE_ACTION:
+                    return new Response('', 204);
+                default:
+                    $actionConfig = $this->getPollActionConfig( $pollId, $pollVotedAction );
+                    return $this->forward($actionConfig['controller'], $actionConfig['params']);
+            }
         }
 
         $opinionsChoices = array();
@@ -87,13 +103,27 @@ class PollController extends Controller
                 $em->persist($opinion);
                 $em->flush();
 
-                // If the form hasn't been sent via ajax, we redirect to the list page
-                if (!$request->isXmlHttpRequest()) {
-                    $response = new RedirectResponse($this->generateUrl('PrismPollBundle_frontend_poll_list'));
-
-                // Show the results
-                } else {
-                    $response = $this->forward('PrismPollBundle:Frontend\Poll:results', array('pollId' => $pollId, 'hasVoted' => true));
+                switch( $pollSubmittedAction )
+                {
+                    case self::CONFIRM_ACTION:
+                        $response = $request->isXmlHttpRequest() ?
+                            // If the form has been sent via ajax, we show the confirmation
+                            new JsonResponse(
+                                array(
+                                    'successMessage' => $this->renderView(
+                                        $this->container->getParameter('prism_poll.templates_frontend.confirm_ajax')
+                                    )
+                                )
+                            ) :
+                            // else, we redirect to the confirmation page
+                            new RedirectResponse($this->generateUrl('PrismPollBundle_frontend_poll_confirm'));
+                        break;
+                    default:
+                        $response = $request->isXmlHttpRequest() ?
+                            // If the form has been sent via ajax, we show the results
+                            $this->forward('PrismPollBundle:Frontend\Poll:results', array('pollId' => $pollId, 'hasVoted' => true)) :
+                            // else, we redirect to the list page
+                            new RedirectResponse($this->generateUrl('PrismPollBundle_frontend_poll_list'));
                 }
 
                 $this->addVotingProtection($pollId, $response);
@@ -101,7 +131,7 @@ class PollController extends Controller
             }
         }
 
-        return $this->render('PrismPollBundle:Frontend\Poll:vote.html.twig', array(
+        return $this->render($this->container->getParameter('prism_poll.templates_frontend.vote'), array(
             'poll' => $poll,
             'form' => $form->createView()
         ));
@@ -124,10 +154,30 @@ class PollController extends Controller
             throw $this->createNotFoundException("This poll doesn't exist.");
         }
 
-        return $this->render('PrismPollBundle:Frontend\Poll:results.html.twig', array(
+        return $this->render($this->container->getParameter('prism_poll.templates_frontend.results'), array(
             'poll' => $poll,
             'hasVoted' => $hasVoted
         ));
+    }
+
+    /**
+     * Show the confirmation of a vote
+     *
+     * @return Response
+     */
+    public function confirmAction()
+    {
+        return $this->render($this->container->getParameter('prism_poll.templates_frontend.confirm'));
+    }
+
+    /**
+     * Show the confirmation of a vote, for an Ajax Request
+     *
+     * @return Response
+     */
+    public function confirmAjaxAction()
+    {
+        return $this->render($this->container->getParameter('prism_poll.templates_frontend.confirm_ajax'));
     }
 
     /**
@@ -157,5 +207,29 @@ class PollController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * @param $pollId
+     * @param $pollAction
+     *
+     * @return array
+     */
+    private function getPollActionConfig( $pollId, $pollAction )
+    {
+        $actionConfig = array();
+
+        switch( $pollAction )
+        {
+            case self::CONFIRM_ACTION:
+                $actionConfig['controller'] = 'PrismPollBundle:Frontend\Poll:confirm';
+                $actionConfig['params'] = array();
+                break;
+            default:
+                $actionConfig['controller'] = 'PrismPollBundle:Frontend\Poll:results';
+                $actionConfig['params'] = array( 'pollId' => $pollId, 'hasVoted' => true );
+        }
+
+        return $actionConfig;
     }
 }

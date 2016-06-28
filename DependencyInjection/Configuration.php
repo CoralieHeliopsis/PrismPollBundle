@@ -39,6 +39,33 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('vote')->defaultValue('Prism\PollBundle\Form\VoteType')->end()
                     ->end()
                 ->end()
+
+                ->arrayNode('templates_frontend')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('list')->defaultValue('PrismPollBundle:Frontend/Poll:list.html.twig')->end()
+                        ->scalarNode('results')->defaultValue('PrismPollBundle:Frontend/Poll:results.html.twig')->end()
+                        ->scalarNode('vote')->defaultValue('PrismPollBundle:Frontend/Poll:vote.html.twig')->end()
+                        ->scalarNode('confirm')->defaultValue('PrismPollBundle:Frontend/Poll:confirm.html.twig')->end()
+                        ->scalarNode('confirm_ajax')->defaultValue('PrismPollBundle:Frontend/Poll:confirm_ajax.html.twig')->end()
+                    ->end()
+                ->end()
+
+                ->arrayNode('templates_backend')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('list')->defaultValue('PrismPollBundle:Backend/Poll:list.html.twig')->end()
+                        ->scalarNode('edit')->defaultValue('PrismPollBundle:Backend/Poll:edit.html.twig')->end()
+                    ->end()
+                ->end()
+
+                ->arrayNode( 'actions' )
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('poll_submitted')->defaultValue('results')->info('Available values : results|confirm')->end()
+                        ->scalarNode('poll_voted')->defaultValue('results')->info('Available values : results|confirm|hide')->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

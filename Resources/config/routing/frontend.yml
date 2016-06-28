@@ -1,11 +1,16 @@
 PrismPollBundle_frontend_poll_list:
-    pattern:  /list
+    path:  /list
     defaults: { _controller: PrismPollBundle:Frontend\Poll:list }
 
 PrismPollBundle_frontend_poll_vote:
-    pattern:  /vote/{pollId}
+    path:  /vote/{pollId}
     defaults: { _controller: PrismPollBundle:Frontend\Poll:vote }
+    methods:  [POST]
 
 PrismPollBundle_frontend_poll_results:
-    pattern:  /results/{pollId}
+    path:  /results/{pollId}
     defaults: { _controller: PrismPollBundle:Frontend\Poll:results }
+
+PrismPollBundle_frontend_poll_confirm:
+    path:  /confirm
+    defaults: { _controller: PrismPollBundle:Frontend\Poll:confirm }

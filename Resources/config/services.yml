@@ -1,5 +1,6 @@
 parameters:
   prism_poll.post_load_listener.class: Prism\PollBundle\Listener\LoadClassMetadataListener
+  prism_poll.poll.class: Prism\PollBundle\Service\PollService
 
 services:
     prism_poll.load_class_metadata:
@@ -8,3 +9,8 @@ services:
             - { name: doctrine.event_listener, event: loadClassMetadata }
         calls:
             - [ setContainer, [ @service_container ] ]
+
+    prism_poll.poll:
+        class: %prism_poll.poll.class%
+        calls:
+            - [ setEntityManager, [ @doctrine.orm.entity_manager ] ]

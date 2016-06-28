@@ -65,5 +65,20 @@ class PrismPollExtension extends Extension
         );
 
         $container->setParameter('prism_poll.association_mapping', $associations);
+
+        foreach($config['templates_frontend'] as $action => $template)
+        {
+            $container->setParameter('prism_poll.templates_frontend.' . $action, $template );
+        }
+
+        foreach($config['templates_backend'] as $action => $template)
+        {
+            $container->setParameter('prism_poll.templates_backend.' . $action, $template );
+        }
+
+        foreach($config['actions'] as $name => $choice)
+        {
+            $container->setParameter('prism_poll.actions.' . $name, $choice );
+        }
     }
 }
