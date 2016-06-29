@@ -61,6 +61,10 @@ class PollController extends Controller
     {
         $this->init();
 
+        $response = new Response();
+        $response->setPrivate();
+        $response->setMaxAge('5');
+
         $poll = $this->pollEntityRepository->findOneBy(array('id' => $pollId, 'published' => true, 'closed' => false));
 
         if (!$poll) {
@@ -75,7 +79,9 @@ class PollController extends Controller
             switch( $pollVotedAction )
             {
                 case self::HIDE_ACTION:
-                    return new Response('', 204);
+                    $response = new Response('', 204);
+                    $response->setPrivate();
+                    return $response;
                 default:
                     $actionConfig = $this->getPollActionConfig( $pollId, $pollVotedAction );
                     return $this->forward($actionConfig['controller'], $actionConfig['params']);
@@ -127,14 +133,19 @@ class PollController extends Controller
                 }
 
                 $this->addVotingProtection($pollId, $response);
+                $response->setPrivate();
                 return $response;
             }
         }
 
-        return $this->render($this->container->getParameter('prism_poll.templates_frontend.vote'), array(
-            'poll' => $poll,
-            'form' => $form->createView()
-        ));
+        return $this->render(
+            $this->container->getParameter('prism_poll.templates_frontend.vote'),
+            array(
+                'poll' => $poll,
+                'form' => $form->createView()
+            ),
+            $response
+        );
     }
 
     /**
