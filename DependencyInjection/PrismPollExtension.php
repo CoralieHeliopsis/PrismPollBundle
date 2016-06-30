@@ -80,5 +80,7 @@ class PrismPollExtension extends Extension
         {
             $container->setParameter('prism_poll.actions.' . $name, $choice );
         }
+
+        $container->setParameter('prism_poll.voting_protection_service', $config['voting_protection_service']);
     }
 }

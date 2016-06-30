@@ -68,6 +68,8 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('poll_voted')->defaultValue('results')->info('Available values : results|confirm|hide')->end()
                     ->end()
                 ->end()
+
+                ->scalarNode('voting_protection_service')->defaultValue('~')->end()
             ->end();
 
         return $treeBuilder;

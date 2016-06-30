@@ -2,6 +2,8 @@
 
 namespace Prism\PollBundle\Controller\Frontend;
 
+use Prism\PollBundle\Entity\Opinion;
+use Prism\PollBundle\Entity\Poll;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -9,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Prism\PollBundle\VotingProtection\VotingProtectionInterface;
 
 class PollController extends Controller
 {
@@ -26,6 +29,9 @@ class PollController extends Controller
         $this->pollEntityRepository = $this->getDoctrine()->getManager()->getRepository($this->pollEntity);
         $this->opinionEntityRepository = $this->getDoctrine()->getManager()->getRepository($this->opinionEntity);
         $this->voteForm = $this->container->getParameter('prism_poll.vote_form');
+        $this->votingProtectionService = $this->container->get(
+            $this->container->getParameter('prism_poll.voting_protection_service')
+        );
     }
 
     /**
@@ -75,7 +81,7 @@ class PollController extends Controller
         $pollSubmittedAction = $this->container->getParameter('prism_poll.actions.poll_submitted');
 
         // If the user has already voted, show the results
-        if ($this->hasVoted($request, $pollId)) {
+        if ($this->hasVoted($request, $poll)) {
             switch( $pollVotedAction )
             {
                 case self::HIDE_ACTION:
@@ -132,7 +138,7 @@ class PollController extends Controller
                             new RedirectResponse($this->generateUrl('PrismPollBundle_frontend_poll_list'));
                 }
 
-                $this->addVotingProtection($pollId, $response);
+                $this->addVotingProtection($poll, $opinion, $response);
                 $response->setPrivate();
                 return $response;
             }
@@ -194,26 +200,55 @@ class PollController extends Controller
     /**
      * Add a cookie to prevent a user from voting multiple times on the same poll
      *
-     * @param int                       $pollId
+     * @param Poll                      $poll
+     * @param Opinion                   $opinion
      * @param Response|RedirectResponse $response
+     *
+     * @return mixed
      */
-    protected function addVotingProtection($pollId, $response)
+    protected function addVotingProtection(Poll $poll, Opinion $opinion, $response)
     {
-        return $response->headers->setCookie(new Cookie('prism_poll_' . $pollId, true, time()+3600*24*365));
+        if( $this->votingProtectionService instanceof VotingProtectionInterface )
+        {
+            try
+            {
+                return $this->votingProtectionService->addVotingProtection( $poll, $opinion );
+            }
+            catch( \VotingProtectionException $e )
+            {
+                //This does not work ... At least we put the cookie for user comfort
+            }
+        }
+
+        $response = $response instanceof Response ? $response : new Response();
+
+        return $response->headers->setCookie(new Cookie('prism_poll_' . $poll->getId(), true, time()+3600*24*365));
     }
 
     /**
      * Check if the user has voted on a poll
      *
      * @param Request $request
-     * @param         $pollId
+     * @param Poll    $poll
      *
      * @return bool
      */
-    protected function hasVoted(Request $request, $pollId)
+    protected function hasVoted(Request $request, $poll)
     {
+        if( $this->votingProtectionService instanceof VotingProtectionInterface )
+        {
+            try
+            {
+                return $this->votingProtectionService->hasVoted( $poll );
+            }
+            catch( \VotingProtectionException $e )
+            {
+                //This does not work ... At least we test the cookie
+            }
+        }
+
         $cookies = $request->cookies;
-        if ($cookies->has('prism_poll_' . $pollId)) {
+        if ($cookies->has('prism_poll_' . $poll->getId())) {
             return true;
         }
 
