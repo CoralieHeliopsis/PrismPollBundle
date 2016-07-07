@@ -17,3 +17,7 @@ PrismPollBundle_backend_poll_results:
 PrismPollBundle_backend_poll_result:
     path:  /result/{pollId}
     defaults: { _controller: PrismPollBundle:Backend/Poll:result }
+
+PrismPollBundle_backend_poll_export:
+    path:  /export/{pollId}
+    defaults: { _controller: PrismPollBundle:Backend/Poll:export }

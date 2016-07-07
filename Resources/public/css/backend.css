@@ -31,7 +31,8 @@
 
 #polls_list .integer,
 #polls_list .boolean,
-#polls_list .delete {
+#polls_list .delete,
+#polls_list .export {
     text-align: center;
 }
 

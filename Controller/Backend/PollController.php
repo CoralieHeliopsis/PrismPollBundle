@@ -3,6 +3,11 @@
 namespace Prism\PollBundle\Controller\Backend;
 
 use Prism\PollBundle\Entity\Poll;
+use Prism\PollBundle\Entity\PollRepository;
+use Prism\PollBundle\Export\CsvFacade;
+use Prism\PollBundle\Form\OpinionType;
+use Prism\PollBundle\Form\PollType;
+use Prism\PollBundle\VotingProtection\VotingProtectionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,6 +17,36 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class PollController extends Controller
 {
     /**
+     * @var Poll
+     */
+    private $pollEntity;
+
+    /**
+     * @var PollRepository
+     */
+    private $pollEntityRepository;
+
+    /**
+     * @var PollType
+     */
+    private $pollForm;
+
+    /**
+     * @var OpinionType
+     */
+    private $opinionForm;
+
+    /**
+     * @var VotingProtectionInterface
+     */
+    private $votingProtectionService;
+
+    /**
+     * @var CsvFacade
+     */
+    private $exportCsvService;
+
+    /**
      * Init
      */
     public function init()
@@ -20,6 +55,12 @@ class PollController extends Controller
         $this->pollEntityRepository = $this->getDoctrine()->getManager()->getRepository($this->pollEntity);
         $this->pollForm = $this->container->getParameter('prism_poll.poll_form');
         $this->opinionForm = $this->container->getParameter('prism_poll.opinion_form');
+        $this->votingProtectionService = $this->container->get(
+            $this->container->getParameter('prism_poll.voting_protection_service')
+        );
+        $this->exportCsvService = $this->container->get(
+            $this->container->getParameter('prism_poll.export_csv_service')
+        );
     }
 
     /**
@@ -152,5 +193,36 @@ class PollController extends Controller
             'poll' => $poll,
             'hasVoted' => $hasVoted
         ));
+    }
+
+    /**
+     * Export the results of a poll
+     *
+     * WARNING : Don't work without custom CsvFacade and PollResultCsvWriter
+     * extending vendor abstract classes
+     *
+     * @param int $pollId
+     *
+     * @return Response
+     */
+    public function exportAction($pollId)
+    {
+        $this->init();
+
+        $poll = $this->pollEntityRepository->findOneBy(array('id' => $pollId));
+
+        if (!$poll) {
+            throw $this->createNotFoundException("This poll doesn't exist.");
+        }
+        
+        $votes = $this->votingProtectionService->getVotingProtections($poll);
+        $csvWriter = $this->exportCsvService->getPollResultsWriter($pollId);
+        
+        foreach( $votes as $vote )
+        {
+            $csvWriter->addPollResult($vote);
+        }
+        
+        return $this->redirect($this->generateUrl('PrismPollBundle_backend_poll_list'));
     }
 }

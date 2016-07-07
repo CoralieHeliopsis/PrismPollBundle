@@ -82,5 +82,6 @@ class PrismPollExtension extends Extension
         }
 
         $container->setParameter('prism_poll.voting_protection_service', $config['voting_protection_service']);
+        $container->setParameter('prism_poll.export_csv_service', $config['export_csv_service']);
     }
 }

@@ -70,6 +70,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
 
                 ->scalarNode('voting_protection_service')->defaultValue('~')->end()
+                ->scalarNode('export_csv_service')->defaultValue('~')->info('Une classe abstraite existe : Prism\PollBundle\Export\CsvFacade')->end()
             ->end();
 
         return $treeBuilder;

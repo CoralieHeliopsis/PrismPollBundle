@@ -25,4 +25,11 @@ interface VotingProtectionInterface
      * @return bool
      */
     public function hasVoted( Poll $poll );
+
+    /**
+     * @param Poll $poll
+     *
+     * @return array
+     */
+    public function getVotingProtections( Poll $poll );
 }

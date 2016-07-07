@@ -25,6 +25,7 @@
                     <th class="boolean">Published</th>
                     <th class="boolean">Closed</th>
                     <th class="delete">Delete</th>
+                    <th class="export">Export</th>
                 </tr>
             </thead>
             <tbody>
@@ -55,6 +56,9 @@
                         </td>
                         <td class="delete">
                             <a href="{{ path('PrismPollBundle_backend_poll_delete', { pollId: poll.id }) }}"><img src="{{ asset('bundles/prismpoll/images/delete.png') }}" width="10" height="10" alt="Delete" /></a>
+                        </td>
+                        <td class="export">
+                            <a href="{{ path('PrismPollBundle_backend_poll_export', { pollId: poll.id }) }}"><img src="{{ asset('bundles/prismpoll/images/export.png') }}" width="10" height="11" alt="Export" /></a>
                         </td>
                     </tr>
                 {% endfor %}
