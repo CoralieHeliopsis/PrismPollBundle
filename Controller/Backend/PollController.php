@@ -223,6 +223,8 @@ class PollController extends Controller
             $csvWriter->addPollResult($vote);
         }
         
-        return $this->redirect($this->generateUrl('PrismPollBundle_backend_poll_list'));
+        return $this->exportCsvService->getDownloadResponse($pollId);
+        
+//        return $this->redirect($this->generateUrl('PrismPollBundle_backend_poll_list'));
     }
 }

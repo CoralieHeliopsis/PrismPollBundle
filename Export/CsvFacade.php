@@ -7,6 +7,7 @@
 namespace Prism\PollBundle\Export;
 
 use League\Csv\AbstractCsv;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Class CsvFacade
@@ -49,12 +50,19 @@ abstract class CsvFacade
     abstract public function getPollResultsWriter( $pollId );
 
     /**
+     * @param $pollId
+     *
+     * @return Response
+     */
+    abstract public function getDownloadResponse( $pollId );
+
+    /**
      * @param $fileName
      * @return \SplFileInfo
      */
     protected function getFileInfo( $fileName )
     {
-        $fileInfo = new \SplFileInfo( $this->exportPath . DIRECTORY_SEPARATOR . $fileName );
+        $fileInfo = new \SplFileInfo( $this->getFullPath( $fileName ) );
         $pathInfo = $fileInfo->getPathInfo();
 
         if ( $fileInfo->isFile() && !$fileInfo->isWritable() )
@@ -78,5 +86,15 @@ abstract class CsvFacade
     {
         $csv->setDelimiter( ';' );
         $csv->setEnclosure( '"' );
+    }
+
+    /**
+     * @param $fileName
+     *
+     * @return string
+     */
+    protected function getFullPath( $fileName )
+    {
+        return $this->exportPath . DIRECTORY_SEPARATOR . $fileName;
     }
 }
